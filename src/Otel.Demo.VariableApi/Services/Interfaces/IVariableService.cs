@@ -2,6 +2,6 @@
 {
     public interface IVariableService
     {
-        Task<double> GetVariableValueFromVariableDB(string variableName);
+        Task<double> GetVariableValue(string variableName);
     }
 }

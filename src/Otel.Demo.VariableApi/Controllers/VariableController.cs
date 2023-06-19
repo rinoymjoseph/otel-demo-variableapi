@@ -11,9 +11,11 @@ namespace Otel.Demo.VariableApi.Controllers
     {
         private readonly IVariableService _variableService;
         private readonly ITelemetryService _telemetryService;
+        private ILogger _logger;
 
-        public VariableController(ITelemetryService telemetryService, IVariableService variableService)
+        public VariableController(ILogger<VariableController> logger, ITelemetryService telemetryService, IVariableService variableService)
         {
+            _logger = logger;
             _telemetryService = telemetryService;
             _variableService = variableService;
         }
@@ -21,6 +23,7 @@ namespace Otel.Demo.VariableApi.Controllers
         [HttpGet("GetVariableData/{variableName}")]
         public async Task<IActionResult> GetVariableData(string variableName="test")
         {
+            _logger.LogInformation("Entering GetVariableData");
             _telemetryService.GetVariableDataReqCounter().Add(1,
                 new("Action", nameof(GetVariableData)),
                 new("Controller", nameof(VariableController)));
@@ -35,10 +38,11 @@ namespace Otel.Demo.VariableApi.Controllers
             activity_GetVariableValue?.SetTag("ContextId", contextId);
             activity_GetVariableValue?.AddEvent(new("GetVariableData"));
             Baggage.SetBaggage("ContextId", contextId);
-            var value = await _variableService.GetVariableValueFromVariableDB(variableName);
+            var value = await _variableService.GetVariableValue(variableName);
             VariableData variableData = new VariableData();
             variableData.Name = variableName;
             variableData.Value = value;
+            _logger.LogInformation("Exiting GetVariableData");
             return Ok(variableData);      
         }
     }
