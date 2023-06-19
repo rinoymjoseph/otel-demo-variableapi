@@ -36,7 +36,6 @@ namespace Otel.Demo.VariableApi.Controllers
             using var activity_GetVariableValue = _telemetryService.GetActivitySource().StartActivity("GetVariableData");
             activity_GetVariableValue?.SetTag("VariableName", variableName);
             activity_GetVariableValue?.SetTag("ContextId", contextId);
-            activity_GetVariableValue?.AddEvent(new("GetVariableData"));
             Baggage.SetBaggage("ContextId", contextId);
             var value = await _variableService.GetVariableValue(variableName);
             VariableData variableData = new VariableData();
