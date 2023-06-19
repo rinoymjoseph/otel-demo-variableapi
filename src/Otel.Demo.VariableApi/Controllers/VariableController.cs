@@ -1,7 +1,7 @@
-﻿using Otel.Demo.VariableApi.Models;
-using Otel.Demo.VariableApi.Services.Interfaces;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using OpenTelemetry;
+using Otel.Demo.VariableApi.Models;
+using Otel.Demo.VariableApi.Services.Interfaces;
 
 namespace Otel.Demo.VariableApi.Controllers
 {
@@ -21,9 +21,9 @@ namespace Otel.Demo.VariableApi.Controllers
         }
 
         [HttpGet("GetVariableData/{variableName}")]
-        public async Task<IActionResult> GetVariableData(string variableName="test")
+        public async Task<IActionResult> GetVariableData(string variableName = "test")
         {
-            _logger.LogInformation("Entering GetVariableData");
+            _logger.LogInformation($"Entering GetVariableData : {variableName}");
             _telemetryService.GetVariableDataReqCounter().Add(1,
                 new("Action", nameof(GetVariableData)),
                 new("Controller", nameof(VariableController)));
@@ -42,8 +42,8 @@ namespace Otel.Demo.VariableApi.Controllers
             VariableData variableData = new VariableData();
             variableData.Name = variableName;
             variableData.Value = value;
-            _logger.LogInformation("Exiting GetVariableData");
-            return Ok(variableData);      
+            _logger.LogInformation($"Exiting GetVariableData : {variableName}");
+            return Ok(variableData);
         }
     }
 }

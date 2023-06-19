@@ -5,13 +5,15 @@ namespace Otel.Demo.VariableApi.Services
 {
     public class VariableService : IVariableService
     {
+        private ILogger _logger;
         private readonly IHttpClientFactory _httpClientFactory;
         private readonly IConfiguration _configuration;
         private readonly ITelemetryService _telemetryService;
 
-        public VariableService(IConfiguration configuration, IHttpClientFactory httpClientFactory,
+        public VariableService(ILogger<VariableService> logger, IConfiguration configuration, IHttpClientFactory httpClientFactory,
            ITelemetryService telemetryService)
         {
+            _logger = logger;
             _httpClientFactory = httpClientFactory;
             _configuration = configuration;
             _telemetryService = telemetryService;
@@ -19,6 +21,7 @@ namespace Otel.Demo.VariableApi.Services
 
         public async Task<double> GetVariableValue(string variableName)
         {
+            _logger.LogInformation($"Entering GetVariableValue : {variableName}");
             using var activity_GetVariables = _telemetryService.GetActivitySource().StartActivity("GetVariableValue");
             var dataApiUrl = _configuration.GetValue<string>(AppConstants.URL_DATA_API);
             var request = new HttpRequestMessage(HttpMethod.Get, $"{dataApiUrl}{AppConstants.REQUEST_GET_VARIABLE_VALUE}/{variableName}");
@@ -26,6 +29,7 @@ namespace Otel.Demo.VariableApi.Services
             var httpResult = await httpClient.SendAsync(request);
             var response = await httpResult.Content.ReadAsStringAsync();
             httpResult.EnsureSuccessStatusCode();
+            _logger.LogInformation($"Exiting GetVariableValue : {variableName}");
             return Convert.ToDouble(response);
         }
     }
