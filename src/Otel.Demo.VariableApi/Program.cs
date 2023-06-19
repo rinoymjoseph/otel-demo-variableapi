@@ -4,6 +4,7 @@ using Otel.Demo.VariableApi.Services.Interfaces;
 using OpenTelemetry.Metrics;
 using OpenTelemetry.Resources;
 using OpenTelemetry.Trace;
+using OpenTelemetry.Logs;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -19,7 +20,16 @@ builder.Services.AddScoped<IVariableService, VariableService>();
 
 string otel_exporter_url = builder.Configuration.GetValue<string>(AppConstants.URL_OTEL_EXPORTER);
 
-builder.Services.AddOpenTelemetry()
+builder.Services
+    .AddLogging((loggingBuilder) => loggingBuilder
+    .AddOpenTelemetry(options =>
+        options
+            .AddConsoleExporter()
+            .AddOtlpExporter(options =>
+            {
+                options.Endpoint = new Uri(otel_exporter_url);
+            })))
+    .AddOpenTelemetry()
     .ConfigureResource(builder => builder
     .AddService(serviceName: AppConstants.OTEL_SERVCICE_NAME))
     .WithTracing(builder => builder
