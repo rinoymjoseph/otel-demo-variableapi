@@ -23,7 +23,7 @@ namespace Otel.Demo.VariableApi.Services
         {
             _logger.LogInformation($"Entering GetVariableValue : variable -> {variableName}");
             using var activity_GetVariables = _telemetryService.GetActivitySource().StartActivity("GetVariableValue");
-            var dataApiUrl = _configuration.GetValue<string>(AppConstants.URL_DATA_API);
+            var dataApiUrl = _configuration.GetValue<string>(AppConstants.DATA_API_URL);
             var request = new HttpRequestMessage(HttpMethod.Get, $"{dataApiUrl}{AppConstants.REQUEST_GET_VARIABLE_VALUE}/{variableName}");
             var httpClient = _httpClientFactory.CreateClient();
             var httpResult = await httpClient.SendAsync(request);
