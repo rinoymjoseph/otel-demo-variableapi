@@ -1,7 +1,9 @@
-﻿namespace Otel.Demo.VariableApi.Services.Interfaces
+﻿using Otel.Demo.VariableApi.Models;
+
+namespace Otel.Demo.VariableApi.Services.Interfaces
 {
     public interface IVariableService
     {
-        Task<double> GetVariableValue(string variableName);
+        Task<VariableData> GetVariableValue(string variableName);
     }
 }

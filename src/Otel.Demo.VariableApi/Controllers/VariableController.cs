@@ -37,12 +37,23 @@ namespace Otel.Demo.VariableApi.Controllers
             activity_GetVariableValue?.SetTag("VariableName", variableName);
             activity_GetVariableValue?.SetTag("ContextId", contextId);
             Baggage.SetBaggage("ContextId", contextId);
-            var value = await _variableService.GetVariableValue(variableName);
-            VariableData variableData = new VariableData();
-            variableData.Name = variableName;
-            variableData.Value = value;
-            _logger.LogInformation($"Exiting GetVariableData : variable -> {variableName}");
-            return Ok(variableData);
+
+            try
+            {
+                var response = await _variableService.GetVariableValue(variableName);
+                _telemetryService.GetVariableDataReqSuccessCounter().Add(1,
+                    new("Action", nameof(GetVariableData)),
+                    new("Controller", nameof(VariableController)));
+                _logger.LogInformation($"Exiting GetVariableData : variable -> {variableName}");
+                return Ok(response);
+            }
+            catch
+            {
+                _telemetryService.GetVariableDataReqFailureCounter().Add(1,
+                    new("Action", nameof(GetVariableData)),
+                    new("Controller", nameof(VariableController)));
+                throw;
+            }          
         }
     }
 }

@@ -1,5 +1,5 @@
-﻿using Otel.Demo.VariableApi.Services.Interfaces;
-using System.Text.Json.Nodes;
+﻿using Otel.Demo.VariableApi.Models;
+using Otel.Demo.VariableApi.Services.Interfaces;
 
 namespace Otel.Demo.VariableApi.Services
 {
@@ -19,7 +19,7 @@ namespace Otel.Demo.VariableApi.Services
             _telemetryService = telemetryService;
         }
 
-        public async Task<double> GetVariableValue(string variableName)
+        public async Task<VariableData> GetVariableValue(string variableName)
         {
             _logger.LogInformation($"Entering GetVariableValue : variable -> {variableName}");
             using var activity_GetVariables = _telemetryService.GetActivitySource().StartActivity("GetVariableValue");
@@ -29,8 +29,11 @@ namespace Otel.Demo.VariableApi.Services
             var httpResult = await httpClient.SendAsync(request);
             var response = await httpResult.Content.ReadAsStringAsync();
             httpResult.EnsureSuccessStatusCode();
+            VariableData variableData = new VariableData();
+            variableData.Name = variableName;
+            variableData.Value = Convert.ToDouble(response);
             _logger.LogInformation($"Exiting GetVariableValue : variable -> {variableName}");
-            return Convert.ToDouble(response);
+            return variableData;
         }
     }
 }

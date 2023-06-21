@@ -8,5 +8,9 @@ namespace Otel.Demo.VariableApi.Services.Interfaces
         ActivitySource GetActivitySource();
 
         Counter<long> GetVariableDataReqCounter();
+
+        Counter<long> GetVariableDataReqSuccessCounter();
+
+        Counter<long> GetVariableDataReqFailureCounter();
     }
 }
