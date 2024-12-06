@@ -22,40 +22,10 @@ builder.Services.AddSwaggerGen();
 builder.Services.AddSingleton<ITelemetryService, TelemetryService>();
 builder.Services.AddScoped<IVariableService, VariableService>();
 
-string otelExporterUrl = builder.Configuration.GetValue<string>(AppConstants.OTEL_EXPORTER_URL);
+string? otelExporterUrl = builder.Configuration.GetValue<string>(AppConstants.OTEL_EXPORTER_URL);
 bool enableOtelLogging = builder.Configuration.GetValue<bool>(AppConstants.OTEL_ENABLE_LOGGING);
 bool enableOtelTracing = builder.Configuration.GetValue<bool>(AppConstants.OTEL_ENABLE_TRACING);
 bool enableOtelMetrics = builder.Configuration.GetValue<bool>(AppConstants.OTEL_ENABLE_METRICS);
-
-if (enableOtelLogging)
-{
-    builder.Services
-    .AddLogging((loggingBuilder) => loggingBuilder
-    .AddOpenTelemetry(options =>
-        options
-            .AddConsoleExporter()
-            .AddOtlpExporter(options =>
-            {
-                options.Endpoint = new Uri(otelExporterUrl);
-            })));
-}
-
-if (enableOtelTracing)
-{
-    builder.Services
-        .AddOpenTelemetry()
-        .ConfigureResource(builder => builder
-        .AddService(serviceName: AppConstants.OTEL_SERVCICE_NAME))
-        .WithTracing(builder => builder
-            .AddSource(AppConstants.OTEL_SERVCICE_NAME)
-            .AddAspNetCoreInstrumentation()
-            .AddHttpClientInstrumentation() //Required for baggage
-            .AddConsoleExporter()
-            .AddOtlpExporter(options =>
-            {
-                options.Endpoint = new Uri(otelExporterUrl);
-            }));
-}
 
 if (enableOtelMetrics)
 {
@@ -72,7 +42,41 @@ if (enableOtelMetrics)
             .AddConsoleExporter()
             .AddOtlpExporter(options =>
             {
-                options.Endpoint = new Uri(otelExporterUrl);
+                options.Endpoint = otelExporterUrl != null ? new Uri(otelExporterUrl) : null!;
+                options.Protocol = OpenTelemetry.Exporter.OtlpExportProtocol.Grpc; // Explicitly set the protocol to gRPC
+            }));
+}
+
+if (enableOtelLogging)
+{
+    builder.Services
+    .AddLogging((loggingBuilder) => loggingBuilder
+    .AddOpenTelemetry(options =>
+        options
+            .SetResourceBuilder(ResourceBuilder.CreateDefault().AddService(AppConstants.OTEL_SERVCICE_NAME))
+            .AddConsoleExporter()
+            .AddOtlpExporter(options =>
+            {
+                options.Endpoint = otelExporterUrl != null ? new Uri(otelExporterUrl) : null!;
+                options.Protocol = OpenTelemetry.Exporter.OtlpExportProtocol.Grpc; // Explicitly set the protocol to gRPC
+            })));
+}
+
+if (enableOtelTracing)
+{
+    builder.Services
+        .AddOpenTelemetry()
+        .ConfigureResource(builder => builder
+        .AddService(serviceName: AppConstants.OTEL_SERVCICE_NAME))
+        .WithTracing(builder => builder
+            .AddSource(AppConstants.OTEL_SERVCICE_NAME)
+            .AddAspNetCoreInstrumentation()
+            .AddHttpClientInstrumentation() //Required for baggage
+            .AddConsoleExporter()
+            .AddOtlpExporter(options =>
+            {
+                options.Endpoint = otelExporterUrl != null ? new Uri(otelExporterUrl) : null!;
+                options.Protocol = OpenTelemetry.Exporter.OtlpExportProtocol.Grpc; // Explicitly set the protocol to gRPC
             }));
 }
 
